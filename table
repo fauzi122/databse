@@ -1,0 +1,157 @@
+/*
+SQLyog Ultimate v12.5.1 (64 bit)
+MySQL - 10.4.8-MariaDB : Database - tes
+*********************************************************************
+*/
+
+/*!40101 SET NAMES utf8 */;
+
+/*!40101 SET SQL_MODE=''*/;
+
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+CREATE DATABASE /*!32312 IF NOT EXISTS*/`tes` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
+
+USE `tes`;
+
+/*Table structure for table `fakultas` */
+
+DROP TABLE IF EXISTS `fakultas`;
+
+CREATE TABLE `fakultas` (
+  `id_fakultas` char(10) NOT NULL,
+  `nama_fakultas` char(30) DEFAULT NULL,
+  PRIMARY KEY (`id_fakultas`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+/*Data for the table `fakultas` */
+
+insert  into `fakultas`(`id_fakultas`,`nama_fakultas`) values 
+('1','EKONOMI'),
+('2','KOMUNIKASI');
+
+/*Table structure for table `mhs` */
+
+DROP TABLE IF EXISTS `mhs`;
+
+CREATE TABLE `mhs` (
+  `nim` char(10) NOT NULL,
+  `nama` varchar(20) DEFAULT NULL,
+  `th_masuk` date DEFAULT NULL,
+  `kondisi` char(2) NOT NULL,
+  `id_fakultas` char(10) NOT NULL,
+  PRIMARY KEY (`nim`,`kondisi`,`id_fakultas`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+/*Data for the table `mhs` */
+
+insert  into `mhs`(`nim`,`nama`,`th_masuk`,`kondisi`,`id_fakultas`) values 
+('201704121','fauzi','2010-01-01','3','2'),
+('201809221','ahmad','2010-01-01','3','2'),
+('201899101','juned','2020-04-03','1','1');
+
+/*Table structure for table `mhs_history` */
+
+DROP TABLE IF EXISTS `mhs_history`;
+
+CREATE TABLE `mhs_history` (
+  `nim` char(10) NOT NULL,
+  `nama` varchar(20) DEFAULT NULL,
+  `th_masuk` date DEFAULT NULL,
+  `kondisi` char(2) DEFAULT NULL,
+  `id_fakultas` char(10) NOT NULL,
+  `tgl_input` date NOT NULL,
+  PRIMARY KEY (`nim`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+/*Data for the table `mhs_history` */
+
+/*Table structure for table `tbl_kondisi` */
+
+DROP TABLE IF EXISTS `tbl_kondisi`;
+
+CREATE TABLE `tbl_kondisi` (
+  `kondisi` char(2) NOT NULL,
+  `ket` varchar(20) NOT NULL,
+  PRIMARY KEY (`kondisi`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+/*Data for the table `tbl_kondisi` */
+
+insert  into `tbl_kondisi`(`kondisi`,`ket`) values 
+('1','AKTIF'),
+('2','CUTI'),
+('3','NON AKTIF');
+
+/* Procedure structure for procedure `sp_mhs` */
+
+/*!50003 DROP PROCEDURE IF EXISTS  `sp_mhs` */;
+
+DELIMITER $$
+
+/*!50003 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_mhs`(tgl_awal DATE, tgl_akhir DATE )
+BEGIN
+
+INSERT INTO `tes`.`mhs_history` (
+  `nim`,
+  `nama`,
+  `th_masuk`,
+  `kondisi`,
+  id_fakultas
+  )
+SELECT
+  `nim`,
+  `nama`,
+  `th_masuk`,
+  `kondisi`,
+   id_fakultas
+FROM
+  `tes`.`mhs` WHERE `th_masuk` BETWEEN tgl_awal and tgl_akhir;
+
+UPDATE
+  `tes`.`mhs_history`
+SET
+  
+  `tgl_input` =CURDATE()
+WHERE `tgl_input` = '0000:00:00';
+  
+  DELETE
+FROM
+  `tes`.`mhs`
+ WHERE `th_masuk` BETWEEN tgl_awal AND tgl_akhir;
+  
+
+
+	END */$$
+DELIMITER ;
+
+/*Table structure for table `v_mhs_aktif` */
+
+DROP TABLE IF EXISTS `v_mhs_aktif`;
+
+/*!50001 DROP VIEW IF EXISTS `v_mhs_aktif` */;
+/*!50001 DROP TABLE IF EXISTS `v_mhs_aktif` */;
+
+/*!50001 CREATE TABLE  `v_mhs_aktif`(
+ `nim` char(10) ,
+ `nama` varchar(20) ,
+ `th_masuk` date ,
+ `kondisi` char(2) ,
+ `id_fakultas` char(10) ,
+ `ket` varchar(20) ,
+ `nama_fakultas` char(30) 
+)*/;
+
+/*View structure for view v_mhs_aktif */
+
+/*!50001 DROP TABLE IF EXISTS `v_mhs_aktif` */;
+/*!50001 DROP VIEW IF EXISTS `v_mhs_aktif` */;
+
+/*!50001 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_mhs_aktif` AS (select `a`.`nim` AS `nim`,`a`.`nama` AS `nama`,`a`.`th_masuk` AS `th_masuk`,`a`.`kondisi` AS `kondisi`,`a`.`id_fakultas` AS `id_fakultas`,`b`.`ket` AS `ket`,`c`.`nama_fakultas` AS `nama_fakultas` from ((`mhs` `a` join `tbl_kondisi` `b` on(`a`.`kondisi` = `b`.`kondisi`)) join `fakultas` `c` on(`a`.`id_fakultas` = `c`.`id_fakultas`)) where `a`.`kondisi` = '1') */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
